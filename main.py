@@ -24,7 +24,7 @@ if 'groq' not in st.session_state:
         st.session_state.groq = Groq()
 
 st.set_page_config(
-    page_title="ScribeWizard",
+    page_title="Vranghels' ScribeWizard",
     page_icon="🧙‍♂️",
 )
       
