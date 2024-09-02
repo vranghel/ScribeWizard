@@ -210,7 +210,7 @@ def generate_notes_structure(transcript: str, model: str = "llama-3.1-70b-versat
             }
         ],
         temperature=0.3,
-        max_tokens=8191,
+        max_tokens=8000,
         top_p=1,
         stream=False,
         response_format={"type": "json_object"},
@@ -236,7 +236,7 @@ def generate_section(transcript: str, existing_notes: str, section: str, model: 
             }
         ],
         temperature=0.3,
-        max_tokens=8191,
+        max_tokens=8000,
         top_p=1,
         stream=True,
         stop=None,
