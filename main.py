@@ -443,7 +443,7 @@ try:
                 # Preprocess the uploaded audio
                 display_status("Preprocessing audio file ....")
                 temp_audio_file = BytesIO()
-                audio_file_contents = audio_file.read()
+                audio_file_contents = audio_file.getvalue()
                 subprocess.run([
                     'ffmpeg',
                     '-i', 'pipe:0',
