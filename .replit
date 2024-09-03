@@ -5,7 +5,7 @@ run = "python -m streamlit run main.py"
 channel = "stable-23_11"
 
 [deployment]
-run = ["sh", "-c", "echo \"\" | python -m streamlit run main.py"]
+run = ["sh", "-c", "echo \"\" | python -m streamlit run main.py  --server.maxUploadSize=1028"]
 deploymentTarget = "cloudrun"
 
 [[ports]]

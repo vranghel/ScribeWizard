@@ -2,6 +2,7 @@ import streamlit as st
 from groq import Groq
 import json
 import os
+import subprocess
 from io import BytesIO
 from md2pdf.core import md2pdf
 from dotenv import load_dotenv
@@ -11,7 +12,7 @@ load_dotenv()
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", None)
 
-MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 25 MB
 FILE_TOO_LARGE_MESSAGE = "The audio file is too large for the current size and rate limits using Whisper. If you used a YouTube link, please try a shorter video clip. If you uploaded an audio file, try trimming or compressing the audio to under 25 MB."
 
 audio_file_path = None
@@ -24,12 +25,12 @@ if 'groq' not in st.session_state:
         st.session_state.groq = Groq()
 
 st.set_page_config(
-    page_title="ScribeWizard",
+    page_title="Vranghels' ScribeWizard",
     page_icon="🧙‍♂️",
 )
-      
+
 class GenerationStatistics:
-    def __init__(self, input_time=0,output_time=0,input_tokens=0,output_tokens=0,total_time=0,model_name="llama3-8b-8192"):
+    def __init__(self, input_time=0,output_time=0,input_tokens=0,output_tokens=0,total_time=0,model_name="llama-3.1-8b-instant"):
         self.input_time = input_time
         self.output_time = output_time
         self.input_tokens = input_tokens
@@ -183,7 +184,7 @@ def transcribe_audio(audio_file):
     results = transcription.text
     return results
 
-def generate_notes_structure(transcript: str, model: str = "llama3-70b-8192"):
+def generate_notes_structure(transcript: str, model: str = "llama-3.1-70b-versatile"):
     """
     Returns notes structure content as well as total tokens and total time for generation.
     """
@@ -222,7 +223,7 @@ def generate_notes_structure(transcript: str, model: str = "llama3-70b-8192"):
 
     return statistics_to_return, completion.choices[0].message.content
 
-def generate_section(transcript: str, existing_notes: str, section: str, model: str = "llama3-8b-8192"):
+def generate_section(transcript: str, existing_notes: str, section: str, model: str = "llama-3.1-8b-instant"):
     stream = st.session_state.groq.chat.completions.create(
         model=model,
         messages=[
@@ -264,7 +265,7 @@ if 'statistics_text' not in st.session_state:
     st.session_state.statistics_text = ""
 
 st.write("""
-# ScribeWizard: Create structured notes from audio 🗒️⚡
+# ScribeWizard: Create structured notes from audio 
 """)
 
 def disable():
@@ -293,7 +294,7 @@ try:
             }
         }
 
-        st.write(f"# 🧙‍♂️ ScribeWizard \n## Generate notes from audio in seconds using Groq, Whisper, and Llama3")
+        st.write(f"# ScribeWizard \n## Generate notes from audio in seconds using Groq, Whisper, and Llama3.1")
         st.markdown(f"[Github Repository](https://github.com/bklieger/scribewizard)\n\nAs with all generative AI, content may include inaccurate or placeholder information. ScribeWizard is in beta and all feedback is welcome!")
 
         st.write(f"---")
@@ -321,11 +322,11 @@ try:
         
         st.write(f"---")
 
-        st.write("# Customization Settings\n🧪 These settings are experimental.\n")
-        st.write(f"By default, ScribeWizard uses Llama3-70b for generating the notes outline and Llama3-8b for the content. This balances quality with speed and rate limit usage. You can customize these selections below.")
-        outline_model_options = ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it"]
+        st.write("# Customization Settings\nThese settings are experimental.")
+        st.write(f"By default, ScribeWizard uses Llama3.1-70b for generating the notes outline and Llama3.1-8b for the content. This balances quality with speed and rate limit usage. You can customize these selections below.")
+        outline_model_options = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
         outline_selected_model = st.selectbox("Outline generation:", outline_model_options)
-        content_model_options = ["llama3-8b-8192", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemma2-9b-it"]
+        content_model_options = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
         content_selected_model = st.selectbox("Content generation:", content_model_options)
 
         
@@ -438,6 +439,23 @@ try:
             if not GROQ_API_KEY:
                 st.session_state.groq = Groq(api_key=groq_input_key)
 
+            if input_method == "Upload audio file":
+                # Preprocess the uploaded audio
+                display_status("Preprocessing audio file ....")
+                temp_audio_file = BytesIO()
+                subprocess.run([
+                    'ffmpeg',
+                    '-i', 'pipe:0',
+                    '-ar', '16000',
+                    '-ac', '1',
+                    '-map', '0:a',
+                    '-f', 'mp3',
+                    'pipe:1'
+                ], stdin=audio_file, stdout=temp_audio_file)
+                audio_file = BytesIO(temp_audio_file.getvalue())
+                audio_file.name = audio_file.name  # Set the file name
+                
+            print(f"Preprocessed file size: {audio_file.getbuffer().nbytes / (1024 * 1024):.2f} MB")
             display_status("Transcribing audio in background....")
             transcription_text = transcribe_audio(audio_file)
 
