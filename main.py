@@ -461,11 +461,11 @@ try:
                 except subprocess.CalledProcessError as e:
                     display_status(f"Error preprocessing audio: {e}")
                     st.error("Failed to preprocess the audio file. Please try again with a different file.")
-                    return
+                    st.stop()
                 except Exception as e:
                     display_status(f"Unexpected error during audio preprocessing: {e}")
                     st.error("An unexpected error occurred. Please try again.")
-                    return
+                    st.stop()
                     
             print(f"Preprocessed file size: {audio_file.getbuffer().nbytes / (1024 * 1024):.2f} MB")
             display_status("Transcribing audio in background....")
