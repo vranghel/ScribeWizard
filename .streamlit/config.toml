@@ -1,2 +1,6 @@
 [server]
+<<<<<<< HEAD
 maxUploadSize = 1028
+=======
+maxUploadSize = 1024
+>>>>>>> refs/remotes/origin/main
