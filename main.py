@@ -442,23 +442,36 @@ try:
             if input_method == "Upload audio file":
                 # Preprocess the uploaded audio
                 display_status("Preprocessing audio file ....")
-                temp_audio_file = BytesIO()
                 audio_file_contents = audio_file.getvalue()
-                subprocess.run([
-                    'ffmpeg',
-                    '-i', 'pipe:0',
-                    '-ar', '16000',
-                    '-ac', '1',
-                    '-map', '0:a',
-                    '-f', 'mp3',
-                    'pipe:1'
-                ], input=audio_file_contents, stdout=temp_audio_file)
-                audio_file = BytesIO(temp_audio_file.getvalue())
-                audio_file.name = audio_file.name  # Set the file name
+                try:
+                    result = subprocess.run([
+                        'ffmpeg',
+                        '-i', 'pipe:0',
+                        '-ar', '16000',
+                        '-ac', '1',
+                        '-map', '0:a',
+                        '-f', 'mp3',
+                        '-'
+                    ], input=audio_file_contents, capture_output=True, check=True)
+                    
+                    audio_file = BytesIO(result.stdout)
+                    audio_file.name = "processed_audio.mp3"  # Set a new file name
+                    
+                    display_status("Audio preprocessing completed successfully.")
+                except subprocess.CalledProcessError as e:
+                    display_status(f"Error preprocessing audio: {e}")
+                    st.error("Failed to preprocess the audio file. Please try again with a different file.")
+                    return
+                except Exception as e:
+                    display_status(f"Unexpected error during audio preprocessing: {e}")
+                    st.error("An unexpected error occurred. Please try again.")
+                    return
                     
             print(f"Preprocessed file size: {audio_file.getbuffer().nbytes / (1024 * 1024):.2f} MB")
             display_status("Transcribing audio in background....")
             transcription_text = transcribe_audio(audio_file)
+
+            display_statistics()
 
             display_statistics()
             
