@@ -443,6 +443,7 @@ try:
                 # Preprocess the uploaded audio
                 display_status("Preprocessing audio file ....")
                 temp_audio_file = BytesIO()
+                audio_file_contents = audio_file.read()
                 subprocess.run([
                     'ffmpeg',
                     '-i', 'pipe:0',
@@ -451,10 +452,10 @@ try:
                     '-map', '0:a',
                     '-f', 'mp3',
                     'pipe:1'
-                ], stdin=audio_file, stdout=temp_audio_file)
+                ], input=audio_file_contents, stdout=temp_audio_file)
                 audio_file = BytesIO(temp_audio_file.getvalue())
                 audio_file.name = audio_file.name  # Set the file name
-                
+                    
             print(f"Preprocessed file size: {audio_file.getbuffer().nbytes / (1024 * 1024):.2f} MB")
             display_status("Transcribing audio in background....")
             transcription_text = transcribe_audio(audio_file)
