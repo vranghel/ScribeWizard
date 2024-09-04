@@ -39,7 +39,7 @@ def get_ydl_opts(external_logger=lambda x: None):
         {
             "key": "FFmpegExtractAudio",
             "preferredcodec": "mp3",
-                "preferredquality": "192",  # set the preferred bitrate to 192kbps
+                "preferredquality": "32",  # set the preferred bitrate to 32kbps (previously was 192kbps)
             }
         ],
         "logger": MyLogger(external_logger),
@@ -49,7 +49,7 @@ def get_ydl_opts(external_logger=lambda x: None):
 
 
 def download_video_audio(url, external_logger=lambda x: None):
-    retries = 0
+    retries = 2
     while retries < max_retries:
         try:
             ydl_opts = get_ydl_opts(external_logger)
