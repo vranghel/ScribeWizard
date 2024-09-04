@@ -293,54 +293,17 @@ def empty_st():
 
 try:
     with st.sidebar:
-        audio_files = {
-            "Transformers Explained by Google Cloud Tech": {
-                "file_path": "assets/audio/transformers_explained.m4a",
-                "youtube_link": "https://www.youtube.com/watch?v=SZorAJ4I-sA"
-            },
-            "The Essence of Calculus by 3Blue1Brown": {
-                "file_path": "assets/audio/essence_calculus.m4a",
-                "youtube_link": "https://www.youtube.com/watch?v=WUvTyaaNkzM"
-            },
-            "First 20 minutes of Groq's AMA": {
-                "file_path": "assets/audio/groq_ama_trimmed_20min.m4a",
-                "youtube_link": "https://www.youtube.com/watch?v=UztfweS-7MU"
-            }
-        }
-
-        st.write(f"# 🧙‍♂️ ScribeWizard \n## Generate notes from audio in seconds using Groq, Whisper, and Llama3.1")
+        st.write(f"# 🧙‍♂️ ScribeWizard \n## Generate notes from audio in seconds using Groq, Whisper, and Llama 3.1")
         st.markdown(f"[Github Repository](https://github.com/bklieger/scribewizard)\n\nAs with all generative AI, content may include inaccurate or placeholder information. ScribeWizard is in beta and all feedback is welcome!")
 
-        st.write(f"---")
-
-        st.write(f"# Sample Audio Files")
-
-        for audio_name, audio_info in audio_files.items():
-
-            st.write(f"### {audio_name}")
-            
-            # Read audio file as binary
-            with open(audio_info['file_path'], 'rb') as audio_file:
-                audio_bytes = audio_file.read()
-
-            # Create download button
-            st.download_button(
-                label=f"Download audio",
-                data=audio_bytes,
-                file_name=audio_info['file_path'],
-                mime='audio/m4a'
-            )
-            
-            st.markdown(f"[Credit Youtube Link]({audio_info['youtube_link']})")
-            st.write(f"\n\n")
-        
+        st.write(f"---") 
         st.write(f"---")
 
         st.write("# Customization Settings\n🧪 These settings are experimental.\n")
         st.write(f"By default, ScribeWizard uses Llama3.1-70b for generating the notes outline and Llama3.1-8b for the content. This balances quality with speed and rate limit usage. You can customize these selections below.")
         outline_model_options = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
         outline_selected_model = st.selectbox("Outline generation:", outline_model_options)
-        content_model_options = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
+        content_model_options = ["llama-3.1-8b-instant","llama-3.1-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"]
         content_selected_model = st.selectbox("Content generation:", content_model_options)
 
         
