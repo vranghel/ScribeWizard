@@ -7,6 +7,7 @@ from io import BytesIO
 from md2pdf.core import md2pdf
 from dotenv import load_dotenv
 from download import download_video_audio, delete_download
+import pydub
 from pydub import AudioSegment
 import tempfile
 
