@@ -7,6 +7,21 @@ from io import BytesIO
 from md2pdf.core import md2pdf
 from dotenv import load_dotenv
 from download import download_video_audio, delete_download
+from pydub import AudioSegment
+import tempfile
+
+def get_audio_duration(audio_file):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
+        tmp_file.write(audio_file.getvalue())
+        tmp_file_path = tmp_file.name
+
+    try:
+        audio = AudioSegment.from_file(tmp_file_path)
+        duration_seconds = len(audio) / 1000
+        minutes, seconds = divmod(int(duration_seconds), 60)
+        return f"{minutes}:{seconds:02d}"
+    finally:
+        os.unlink(tmp_file_path)
 
 load_dotenv()
 
@@ -369,7 +384,12 @@ try:
         # Add radio button to choose between file upload and YouTube link
         
         if input_method == "Upload audio file":
-            audio_file = st.file_uploader("Upload an audio file", type=["mp3", "wav", "m4a"]) # TODO: Add a max size
+            if input_method == "Upload audio file":
+                audio_file = st.file_uploader("Upload an audio file", type=["mp3", "wav", "m4a"])
+                if audio_file is not None:
+                    file_size = audio_file.size / (1024 * 1024)  # Convert to MB
+                    duration = get_audio_duration(audio_file)
+                    st.write(f"File: {audio_file.name} ({file_size:.2f} MB, Duration: {duration})")
         else:
             youtube_link = st.text_input("Enter YouTube link:", "")
 

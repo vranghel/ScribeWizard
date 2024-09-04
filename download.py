@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 import yt_dlp as youtube_dl
 import os
 import time
-import os
 import shutil
 
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 25 MB
