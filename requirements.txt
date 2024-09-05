@@ -74,7 +74,7 @@ pydub
 groq==0.8.0
 streamlit-audiorecorder==0.0.5
 streamlit-extras==0.4.2
-#llama-index
+llama-index
 #llama-index-embeddings-huggingface
 #yt_dlp==2024.7.16 # Temporarily disabled due to compatibility issues
 langchain>=0.2.5
@@ -90,6 +90,6 @@ streamlit-ace>=0.1.1
 #watchdog==4.0.1
 #streamlit-audiorecorder==0.0.5
 #streamlit-extras==0.4.2
-llama-index==0.10.41
+#llama-index==0.10.41
 llama-index-embeddings-huggingface==0.2.1
 #yt_dlp==2024.7.16
