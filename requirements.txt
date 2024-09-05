@@ -75,7 +75,7 @@ groq==0.8.0
 streamlit-audiorecorder==0.0.5
 streamlit-extras==0.4.2
 llama-index
-#llama-index-embeddings-huggingface
+llama-index-embeddings-huggingface
 #yt_dlp==2024.7.16 # Temporarily disabled due to compatibility issues
 langchain>=0.2.5
 langchain_groq>=0.1.5
