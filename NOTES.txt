@@ -1,2 +1,4 @@
 pip install -r requirements.txt
 streamlit run app.py --server.port 8501 --server.enableCORS false --server.enableXsrfProtection false
+
+export GROQ_API_KEY=
