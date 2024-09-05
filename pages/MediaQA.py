@@ -9,6 +9,7 @@ sys.path.append(current_dir)
 from MediaQA import config
 from MediaQA import utils
 from MediaQA import styles
+avatar_path = os.path.join(current_dir, 'MediaQA', 'static', 'ai_avatar.png')
 
 
 
@@ -256,7 +257,7 @@ Your responses should be in markdown. \
             gen = chat_stream(model, messages)
             if transcribe_status:
                 transcribe_status.update(expanded=False)
-            with st.chat_message("ai", avatar="./static/ai_avatar.png"):
+            with st.chat_message("ai", avatar=avatar_path):
                 st.write_stream(gen)
         except Exception as e:
             raise e
