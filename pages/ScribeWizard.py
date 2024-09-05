@@ -311,12 +311,10 @@ def empty_st():
 
 try:
     with st.sidebar:
-        st.write(f"# 🧙‍♂️ ScribeWizard \n## Generate notes from audio in seconds using Groq, Whisper, and Llama 3.1")
-        st.markdown(f"[Github Repository](https://github.com/bklieger/scribewizard)\n\nAs with all generative AI, content may include inaccurate or placeholder information. ScribeWizard is in beta and all feedback is welcome!")
+        st.write(f"# 🧙‍♂️ ScribeWizard \n## Generate notes from audio using Groq, Whisper, and Llama 3.1")
+        #st.markdown(f"[Github Repository](https://github.com/bklieger/scribewizard)\n\nAs with all generative AI, content may include inaccurate or placeholder information. ScribeWizard is in beta and all feedback is welcome!")
 
-        st.write(f"---") 
-        st.write(f"---")
-
+        #st.write(f"---") 
         st.write("# Customization Settings\n🧪 These settings are experimental.\n")
         st.write(f"By default, ScribeWizard uses Llama3.1-70b for generating the notes outline and Llama3.1-8b for the content. This balances quality with speed and rate limit usage. You can customize these selections below.")
         outline_model_options = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
@@ -325,6 +323,9 @@ try:
         content_model_options = ["llama-3.1-8b-instant","llama-3.1-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"]
         #content_model_options = list(GROQ_MODELS.keys())
         content_selected_model = st.selectbox("Content generation:", content_model_options)
+        st.write(f"---")
+
+
 
         
         # Add note about rate limits
