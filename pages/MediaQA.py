@@ -10,7 +10,7 @@ from MediaQA import config
 from MediaQA import utils
 from MediaQA import styles
 avatar_path = os.path.join(current_dir, 'MediaQA', 'static', 'ai_avatar.png')
-
+groq_api_key = st.secrets["GROQ_API_KEY"]
 
 
 st.title("Media QA")
@@ -40,7 +40,7 @@ VECTOR_INDEX = VECTOR_INDEX
 #   }
 #)
 
-groqClient = Groq()
+groqClient = Groq(api_key=groq_api_key)
 
 st.markdown("<a href='https://wow.groq.com/groq-labs/'><img src='app/static/logo.png' width='200'></a>", unsafe_allow_html=True)
 st.write("---")
