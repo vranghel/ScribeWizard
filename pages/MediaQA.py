@@ -171,7 +171,7 @@ options = {
 }
 
 
-@st.fragment
+@st.experimental_fragment
 def transcribe_container():
     global transcribe_button_container, transcribe_status, transcribe_button, VECTOR_INDEX
     transcribe_button_container = stylable_container(
@@ -201,7 +201,7 @@ def transcribe_container():
                 transcribe_status.update(label="Error", state='error')
                 st.error("Something went wrong :/")
 
-@st.fragment
+@st.experimental_fragment
 def chat_container():
     global user_input, transcribe_status, VECTOR_INDEX
     if st.session_state.get('audio'):
