@@ -17,5 +17,6 @@ PIPELINE = IngestionPipeline(
         EMBED_MODEL,
     ]
 )
-GROQ_CLIENT = Groq()
+#groq_api_key = st.secrets["GROQ_API_KEY"]
+GROQ_CLIENT = Groq()  #api_key=groq_api_key
 VECTOR_INDEX: VectorStoreIndex = None

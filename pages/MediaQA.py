@@ -17,7 +17,7 @@ st.title("Media QA")
 
 
 '''
-Main entry file for the streamlit app
+Audio transcription, summarization, & QA.
 '''
 from io import BytesIO
 from groq import Groq
@@ -48,19 +48,24 @@ header_container = stylable_container(
     key="header",
     css_styles=header_container_css
 )
-header_container.header("Project Media QA", anchor=False)
+#header_container.header("Project Media QA", anchor=False)
 
 
-ASR_MODELS = {"Whisper V3 large": "whisper-large-v3"}
+ASR_MODELS = {"Whisper V3 large": "whisper-large-v3","Whisper V3 large simplified":'distil-whisper-large-v3-en'}
 
-GROQ_MODELS = {model.id.replace("-", " ").title() : model.id for model in Groq().models.list().data if not (model.id.startswith("whisper") or model.id.startswith("llama-guard"))}
+#GROQ_MODELS = {model.id.replace("-", " ").title() : model.id for model in Groq().models.list().data if not (model.id.startswith("whisper") or model.id.startswith("llama-guard"))}
+GROQ_MODELS = {
+    model.id.replace("-", " ").title(): model.id
+    for model in Groq().models.list().data
+    if not ("whisper" in model.id or model.id.startswith("llama-guard"))
+}
 
 LANGUAGES = {
     "Automatic Language Detection": None,
 }
 
 
-st.caption("Experience ultra-accelerated video and audio transcription, summarization, & QA made possible by combining open-source LLMs and ASR models both powered by Groq.")
+st.caption("Audio transcription, summarization, & QA.")
 
 
 # Dropdowns with styling
@@ -82,10 +87,10 @@ with col1:
     }
 
 with col2:
-    asr_model = st.selectbox("Groq Supported ASR Models", options=list(ASR_MODELS.keys()))
+    asr_model = st.selectbox("Speech Recognition", options=list(ASR_MODELS.keys()))
 
 with col3:
-    groq_model = st.selectbox("Groq Supported LLMs", options=list(GROQ_MODELS.keys()))
+    groq_model = st.selectbox("Language Models", options=list(GROQ_MODELS.keys()))
 
 audio_source = st.radio(
     "Choose audio source",

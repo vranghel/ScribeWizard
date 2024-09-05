@@ -4,3 +4,4 @@ venv
 **.pyc
 downloads/
 *.txt
+secrets.toml

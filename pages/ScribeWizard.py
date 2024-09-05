@@ -26,6 +26,12 @@ import tempfile
 
 #st.title("Main App")
 
+GROQ_MODELS = {
+    model.id.replace("-", " ").title(): model.id
+    for model in Groq().models.list().data
+    if not ("whisper" in model.id or model.id.startswith("llama-guard"))
+}
+
 def get_audio_duration(audio_file):
     with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
         tmp_file.write(audio_file.getvalue())
@@ -314,8 +320,10 @@ try:
         st.write("# Customization Settings\n🧪 These settings are experimental.\n")
         st.write(f"By default, ScribeWizard uses Llama3.1-70b for generating the notes outline and Llama3.1-8b for the content. This balances quality with speed and rate limit usage. You can customize these selections below.")
         outline_model_options = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
+        #outline_model_options = list(GROQ_MODELS.keys())
         outline_selected_model = st.selectbox("Outline generation:", outline_model_options)
         content_model_options = ["llama-3.1-8b-instant","llama-3.1-70b-versatile", "mixtral-8x7b-32768", "gemma2-9b-it"]
+        #content_model_options = list(GROQ_MODELS.keys())
         content_selected_model = st.selectbox("Content generation:", content_model_options)
 
         
