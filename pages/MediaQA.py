@@ -27,6 +27,8 @@ groq_api_key = st.secrets["GROQ_API_KEY"]
 st.title("Media QA")
 st.caption("Audio transcription, summarization, & QA.")
 
+
+
 VECTOR_INDEX = VECTOR_INDEX
 groqClient = Groq(api_key=groq_api_key)
 
@@ -81,12 +83,14 @@ with col2:
 with col3:
     groq_model = st.selectbox("Language Models", options=list(GROQ_MODELS.keys()))
 
+
 audio_source = st.radio(
     "Choose audio source",
     options=["Record audio", "Upload media file", "Load media from URL"],
     horizontal=True,
 )
 
+# Then, use it in the conditional statements
 if audio_source == "Upload media file":
     file_uploader = stylable_container(
     key="file_uploader",
@@ -100,32 +104,55 @@ if audio_source == "Upload media file":
     print(f"Audio uploaded: {audio_file}")
     if audio_file:
         st.session_state['result'] = None
-        original_file_size = audio_file.size / (1024 * 1024)  # Convert to MB
-        audio_file_contents = audio_file.getvalue()
-        # Preprocess the uploaded audio
+        st.session_state['audio'] = BytesIO(audio_file.getvalue())
+        st.session_state['mimetype'] = audio_file.type
+        st.audio(st.session_state['audio'])  # Show audio player for uploaded file
+    else:
+        st.session_state['audio'] = None
+        st.session_state['mimetype'] = None
+
+elif audio_source == "Load media from URL":
+    url = st.text_input(
+        "URL",
+        key="url",
+        value="https://static.deepgram.com/examples/interview_speech-analytics.wav",
+    )
+
+    if url != "":
+        st.session_state["audio"] = None
         try:
-            result = subprocess.run([
-                'ffmpeg',
-                '-i', 'pipe:0',
-                '-ar', '16000',
-                '-ac', '1',
-                '-map', '0:a',
-                '-f', 'mp3',
-                '-'
-            ], input=audio_file_contents, capture_output=True, check=True)
-            
-            audio_file = BytesIO(result.stdout)
-            audio_file.name = "processed_audio.mp3"  # Set a new file name
-            
-            processed_file_size = audio_file.getbuffer().nbytes / (1024 * 1024)  # Convert to MB
-            duration = get_audio_duration(audio_file)
-            st.write(f"File: {audio_file.name} ({original_file_size:.2f} MB --> {processed_file_size:.2f} MB, Duration: {duration})")
-            
-            st.session_state['audio'] = audio_file
-            st.session_state['mimetype'] = "audio/mp3"
+            if "youtube.com" in url or "youtu.be" in url:
+                print("Reading audio from YouTube")
+                with st.spinner("Loading Youtube video..."):
+                    st.session_state['result'] = None
+                    st.video(url)
+                    buffer, mimetype = read_from_youtube(url)
+                    st.session_state["audio"] = buffer
+                    st.session_state['mimetype'] = mimetype
+            else:
+                print("Reading audio from URL")
+                with st.spinner("Loading audio URL..."):
+                    st.session_state['result'] = None
+                    st.session_state["audio"] = read_from_url(url)
+                    st.session_state['mimetype'] = "audio/wav"
+                    st.audio(st.session_state["audio"])  # Show audio player for URL
+                print(f"Audio bytes: {st.session_state['audio'].getbuffer().nbytes} bytes")
         except Exception as e:
-            st.error(e)
-            st.error("Failed to preprocess the audio file.")
+            st.error(str(e))
+            st.error("Invalid URL entered.")
+
+elif audio_source == "Record audio":
+    audio = audiorecorder("Click to record", "Click to stop recording", show_visualizer=True, key="audio-recorder")
+    if len(audio) != 0:
+        print(f"Audio recorded: {audio}, length {len(audio)}")
+        st.session_state["result"] = None
+        with st.spinner("Processing audio..."):
+            audio_bytes = BytesIO()
+            audio.export(audio_bytes, format="wav")
+            st.session_state["audio"] = audio_bytes
+            st.audio(audio_bytes)
+            st.session_state['mimetype'] = "audio/wav"
+            st.session_state["audio"].seek(0)
     else:
         st.session_state['audio'] = None
         st.session_state['mimetype'] = None
