@@ -40,8 +40,8 @@ protobuf==4.25.3
 pyarrow==16.1.0
 pycparser==2.22
 pycryptodomex==3.20.0
-#pydantic==2.7.1
-pydantic
+pydantic==2.7.1
+#pydantic
 pydantic_core==2.18.2
 pydeck==0.9.1
 pydyf==0.10.0
@@ -56,7 +56,7 @@ rpds-py==0.18.1
 six==1.16.0
 smmap==5.0.1
 sniffio==1.3.1
-streamlit==1.36.0
+#streamlit==1.36.0
 tenacity==8.3.0
 tinycss2==1.3.0
 toml==0.10.2
@@ -71,19 +71,19 @@ websockets
 yt-dlp @ https://github.com/yt-dlp/yt-dlp/archive/master.tar.gz
 zopfli==0.2.3
 #pydub
-groq==0.8.0
+groq==0.11.0  ##latest 0.11.0
 streamlit-audiorecorder==0.0.5
 streamlit-extras==0.4.2
-llama-index
+llama-index==0.10.24
 llama-index-embeddings-huggingface
 #yt_dlp==2024.7.16 # Temporarily disabled due to compatibility issues
-langchain>=0.2.5
+langchain==0.2.7
 langchain_groq>=0.1.5
 streamlit>=1.36.0
 watchdog>=4.0.1
 python-dotenv>=1.0.1
 streamlit-ace>=0.1.1
-langchain-groq
+langchain-groq==0.1.5
 
 #groq==0.8.0
 #requests==2.32.2
