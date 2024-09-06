@@ -371,19 +371,34 @@ try:
     input_method = st.radio("Choose input method:", ["Upload audio file", "YouTube link"])
     if input_method == "Upload audio file":
         audio_file = st.file_uploader("Upload an audio file", type=["mp3", "wav", "m4a"])
-        if audio_file is not None:
-            file_size = audio_file.size / (1024 * 1024)  # Convert to MB
-            duration = get_audio_duration(audio_file)
-            #st.write(f"File: {audio_file.name} ({file_size:.2f} MB, Duration: {duration})")
-            # Store processed audio in session state
-            st.session_state["audio"] = audio_file
-            st.session_state['mimetype'] = "audio/mp3"
-            # Display audio player
-            st.audio(st.session_state["audio"])
+        if audio_file:
+            st.session_state['result'] = None
+            original_file_size = audio_file.size / (1024 * 1024)  # Convert to MB
+            original_mimetype = audio_file.type  # Store the original mimetype
+            audio_file_contents = audio_file.getvalue()
+            # Preprocess the uploaded audio
+            result = subprocess.run([
+                'ffmpeg',
+                '-i', 'pipe:0',
+                '-ar', '16000',
+                '-ac', '1',
+                '-map', '0:a',
+                '-f', 'mp3',
+                '-'
+            ], input=audio_file_contents, capture_output=True, check=True)
+            processed_audio = BytesIO(result.stdout)
+            processed_audio.name = "processed_audio.mp3"  # Set a new file name
+            processed_file_size = processed_audio.getbuffer().nbytes / (1024 * 1024)  # Convert to MB
+            duration = get_audio_duration(processed_audio)
+            st.write(f"File: {audio_file.name} ({original_file_size:.2f} MB --> {processed_file_size:.2f} MB, Duration: {duration})")
 
-            st.session_state.audio_file = audio_file.read()
+            st.session_state['audio'] = processed_audio
+            st.session_state['mimetype'] = "audio/mp3"  # Set mimetype to mp3 since we converted it
+            st.audio(st.session_state['audio'])  # Show audio player for uploaded file
+
+            st.session_state.audio_file = processed_audio.read()
             st.session_state.button_step = 1
-            st.session_state.button_text = "Generate Notes"
+            st.session_state.button_text = "Generate Notes"   
     else:
         youtube_link = st.text_input("Enter YouTube link:", "")
 
