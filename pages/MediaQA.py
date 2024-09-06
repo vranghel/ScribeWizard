@@ -54,11 +54,8 @@ header_container = stylable_container(
 ASR_MODELS = {"Whisper V3 large": "whisper-large-v3","Whisper V3 large simplified":'distil-whisper-large-v3-en'}
 
 #GROQ_MODELS = {model.id.replace("-", " ").title() : model.id for model in Groq().models.list().data if not (model.id.startswith("whisper") or model.id.startswith("llama-guard"))}
-GROQ_MODELS = {
-    model.id.replace("-", " ").title(): model.id
-    for model in Groq().models.list().data
-    if not ("whisper" in model.id or model.id.startswith("llama-guard"))
-}
+GROModelOptions = ["llama-3.1-70b-versatile","llGuidId-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
+GROQ_MODELS = {model: model for model in GROModelOptions}
 
 LANGUAGES = {
     "Automatic Language Detection": None,
