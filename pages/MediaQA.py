@@ -12,6 +12,19 @@ from MediaQA import styles
 avatar_path = os.path.join(current_dir, 'MediaQA', 'static', 'ai_avatar.png')
 groq_api_key = st.secrets["GROQ_API_KEY"]
 
+import nltk
+import ssl
+
+try:
+    _create_unverified_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+else:
+    ssl._create_default_https_context = _create_unverified_https_context
+
+nltk.download('punkt')
+
+
 
 st.title("Media QA")
 
