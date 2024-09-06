@@ -40,7 +40,7 @@ header_container = stylable_container(
 )
 
 ASR_MODELS = {"Whisper V3 large": "whisper-large-v3", "Whisper V3 large simplified": 'distil-whisper-large-v3-en'}
-GROModelOptions = ["llama-3.1-70b-versatile", "llGuidId-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
+GROModelOptions = ["llama-3.1-70b-versatile","llama-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
 GROQ_MODELS = {model: model for model in GROModelOptions}
 LANGUAGES = {
     "Automatic Language Detection": None,
@@ -134,7 +134,7 @@ elif audio_source == "Load media from URL":
     url = st.text_input(
         "URL",
         key="url",
-        value="https://static.deepgram.com/examples/interview_speech-analytics.wav",
+        value="",
     )
 
     if url != "":
