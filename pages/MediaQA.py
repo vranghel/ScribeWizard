@@ -1,6 +1,14 @@
 import streamlit as st
 import sys
 import os
+from io import BytesIO
+from groq import Groq
+from audiorecorder import audiorecorder
+from streamlit_extras.stylable_container import stylable_container
+from dotenv import load_dotenv
+import subprocess
+import tempfile
+from pydub import AudioSegment
 
 # Add the app1 directory to the Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -9,40 +17,17 @@ sys.path.append(current_dir)
 from MediaQA import config
 from MediaQA import utils
 from MediaQA import styles
+from MediaQA.styles import button_css, selectbox_css, file_uploader_css, header_container_css, transcript_container
+from MediaQA.utils import read_from_url, prerecorded, chat_stream, create_vectorstore, read_from_youtube
+from MediaQA.config import GROQ_CLIENT, VECTOR_INDEX
+
 avatar_path = os.path.join(current_dir, 'MediaQA', 'static', 'ai_avatar.png')
 groq_api_key = st.secrets["GROQ_API_KEY"]
 
-
-
-
-
 st.title("Media QA")
-
-
-'''
-Audio transcription, summarization, & QA.
-'''
-from io import BytesIO
-from groq import Groq
-import streamlit as st
-from MediaQA.styles import button_css, selectbox_css, file_uploader_css, header_container_css, transcript_container
-from audiorecorder import audiorecorder
-from streamlit_extras.stylable_container import stylable_container
-from MediaQA.utils import read_from_url, prerecorded, chat_stream, create_vectorstore, read_from_youtube
-from MediaQA.config import GROQ_CLIENT, VECTOR_INDEX
-from dotenv import load_dotenv
+st.caption("Audio transcription, summarization, & QA.")
 
 VECTOR_INDEX = VECTOR_INDEX
-
-#st.set_page_config(
-#    page_title="Project Media QA",
-#    layout='centered',
-#    page_icon='static/favicon.ico',
-#    menu_items={
-#        'About': "## Project Media QA \n [Groqlabs](https://wow.groq.com/groq-labs/)"
-#   }
-#)
-
 groqClient = Groq(api_key=groq_api_key)
 
 st.markdown("<a href='https://wow.groq.com/groq-labs/'><img src='app/static/logo.png' width='200'></a>", unsafe_allow_html=True)
@@ -51,22 +36,26 @@ header_container = stylable_container(
     key="header",
     css_styles=header_container_css
 )
-#header_container.header("Project Media QA", anchor=False)
 
-
-ASR_MODELS = {"Whisper V3 large": "whisper-large-v3","Whisper V3 large simplified":'distil-whisper-large-v3-en'}
-
-#GROQ_MODELS = {model.id.replace("-", " ").title() : model.id for model in Groq().models.list().data if not (model.id.startswith("whisper") or model.id.startswith("llama-guard"))}
-GROModelOptions = ["llama-3.1-70b-versatile","llGuidId-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
+ASR_MODELS = {"Whisper V3 large": "whisper-large-v3", "Whisper V3 large simplified": 'distil-whisper-large-v3-en'}
+GROModelOptions = ["llama-3.1-70b-versatile", "llGuidId-3.1-8b-instant", "mixtral-8x7b-32768", "gemma2-9b-it"]
 GROQ_MODELS = {model: model for model in GROModelOptions}
-
 LANGUAGES = {
     "Automatic Language Detection": None,
 }
 
+def get_audio_duration(audio_file):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(audio_file.name)[1]) as tmp_file:
+        tmp_file.write(audio_file.getvalue())
+        tmp_file_path = tmp_file.name
 
-st.caption("Audio transcription, summarization, & QA.")
-
+    try:
+        audio = AudioSegment.from_file(tmp_file_path)
+        duration_seconds = len(audio) / 1000
+        minutes, seconds = divmod(int(duration_seconds), 60)
+        return f"{minutes}:{seconds:02d}"
+    finally:
+        os.unlink(tmp_file_path)
 
 # Dropdowns with styling
 dropdown_container = stylable_container(
@@ -111,59 +100,35 @@ if audio_source == "Upload media file":
     print(f"Audio uploaded: {audio_file}")
     if audio_file:
         st.session_state['result'] = None
-        st.session_state['audio'] = BytesIO(audio_file.getvalue())
-        st.session_state['mimetype'] = audio_file.type
-    else:
-        st.session_state['audio'] = None
-        st.session_state['mimetype'] = None
-
-elif audio_source == "Load media from URL":
-    url = st.text_input(
-        "URL",
-        key="url",
-        value="https://static.deepgram.com/examples/interview_speech-analytics.wav",
-    )
-
-    if url != "":
-        st.session_state["audio"] = None
+        original_file_size = audio_file.size / (1024 * 1024)  # Convert to MB
+        audio_file_contents = audio_file.getvalue()
+        # Preprocess the uploaded audio
         try:
-            if "youtube.com" in url or "youtu.be" in url:
-                print("Reading audio from YouTube")
-                with st.spinner("Loading Youtube video..."):
-                    st.session_state['result'] = None
-                    st.video(url)
-                    buffer, mimetype = read_from_youtube(url)
-                    st.session_state["audio"] = buffer
-                    st.session_state['mimetype'] = mimetype
-            else:
-                print("Reading audio from URL")
-                with st.spinner("Loading audio URL..."):
-                    st.session_state['result'] = None
-                    st.session_state["audio"] = read_from_url(url)
-                    st.session_state['mimetype'] = "audio/wav"
-                    st.audio(st.session_state["audio"])
-                print(f"Audio bytes: {st.session_state['audio'].getbuffer().nbytes} bytes")
+            result = subprocess.run([
+                'ffmpeg',
+                '-i', 'pipe:0',
+                '-ar', '16000',
+                '-ac', '1',
+                '-map', '0:a',
+                '-f', 'mp3',
+                '-'
+            ], input=audio_file_contents, capture_output=True, check=True)
+            
+            audio_file = BytesIO(result.stdout)
+            audio_file.name = "processed_audio.mp3"  # Set a new file name
+            
+            processed_file_size = audio_file.getbuffer().nbytes / (1024 * 1024)  # Convert to MB
+            duration = get_audio_duration(audio_file)
+            st.write(f"File: {audio_file.name} ({original_file_size:.2f} MB --> {processed_file_size:.2f} MB, Duration: {duration})")
+            
+            st.session_state['audio'] = audio_file
+            st.session_state['mimetype'] = "audio/mp3"
         except Exception as e:
-            raise e
             st.error(e)
-            st.error("Invalid URL entered.")
-
-else:
-    audio = audiorecorder("Click to record", "Click to stop recording", show_visualizer=True, key="audio-recorder")
-    if len(audio) != 0:
-        print(f"Audio recorded: {audio}, length {len(audio)}")
-        st.session_state["result"] = None
-        with st.spinner("Processing audio..."):
-            audio_bytes = BytesIO()
-            audio.export(audio_bytes, format="wav")
-            st.session_state["audio"] = audio_bytes
-            st.audio(audio_bytes)
-            st.session_state['mimetype'] = "audio/wav"
-            st.session_state["audio"].seek(0)
+            st.error("Failed to preprocess the audio file.")
     else:
         st.session_state['audio'] = None
         st.session_state['mimetype'] = None
-
 
 options = {
     "model": ASR_MODELS[asr_model],
