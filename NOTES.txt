@@ -1,4 +1,5 @@
 pip install -r requirements.txt
+streamlit run app.py --server.address="localhost" --server.port=8501 --server.enableXsrfProtection=false --server.enableCORS=false
 
 
 
