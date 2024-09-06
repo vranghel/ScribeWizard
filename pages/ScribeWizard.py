@@ -375,6 +375,12 @@ try:
             file_size = audio_file.size / (1024 * 1024)  # Convert to MB
             duration = get_audio_duration(audio_file)
             st.write(f"File: {audio_file.name} ({file_size:.2f} MB, Duration: {duration})")
+            # Store processed audio in session state
+            st.session_state["audio"] = audio_file
+            st.session_state['mimetype'] = "audio/mp3"
+            # Display audio player
+            st.audio(st.session_state["audio"])
+            
             st.session_state.audio_file = audio_file.read()
             st.session_state.button_step = 1
             st.session_state.button_text = "Generate Notes"

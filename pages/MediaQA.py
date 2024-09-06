@@ -145,17 +145,52 @@ elif audio_source == "Load media from URL":
                 with st.spinner("Loading Youtube video..."):
                     st.session_state['result'] = None
                     st.video(url)
-                    buffer, mimetype = read_from_youtube(url)
-                    st.session_state["audio"] = buffer
-                    st.session_state['mimetype'] = mimetype
+                    original_audio, original_mimetype = read_from_youtube(url)
+                    original_filename = "youtube_audio.mp3"  # Default name for YouTube audio
             else:
                 print("Reading audio from URL")
                 with st.spinner("Loading audio URL..."):
                     st.session_state['result'] = None
-                    st.session_state["audio"] = read_from_url(url)
-                    st.session_state['mimetype'] = "audio/wav"
-                    st.audio(st.session_state["audio"])  # Show audio player for URL
-                print(f"Audio bytes: {st.session_state['audio'].getbuffer().nbytes} bytes")
+                    original_audio = read_from_url(url)
+                    original_mimetype = "audio/wav"  # Assuming WAV format for non-YouTube URLs
+                    original_filename = url.split("/")[-1]  # Extract filename from URL
+
+            # Get original file size
+            original_file_size = len(original_audio.getvalue()) / (1024 * 1024)  # Convert to MB
+
+            # Preprocess the audio
+            with st.spinner("Processing audio..."):
+                result = subprocess.run([
+                    'ffmpeg',
+                    '-i', 'pipe:0',
+                    '-ar', '16000',
+                    '-ac', '1',
+                    '-map', '0:a',
+                    '-f', 'mp3',
+                    '-'
+                ], input=original_audio.getvalue(), capture_output=True, check=True)
+
+                processed_audio = BytesIO(result.stdout)
+                processed_audio.name = original_filename  # Use original filename
+
+            # Get processed file size
+            processed_file_size = len(processed_audio.getvalue()) / (1024 * 1024)  # Convert to MB
+
+            # Get duration
+            duration = get_audio_duration(processed_audio)
+
+            # Display file information
+            st.write(f"File: {original_filename} ({original_file_size:.2f} MB --> {processed_file_size:.2f} MB, Duration: {duration})")
+
+            # Store processed audio in session state
+            st.session_state["audio"] = processed_audio
+            st.session_state['mimetype'] = "audio/mp3"
+
+            # Display audio player
+            st.audio(st.session_state["audio"])
+
+            print(f"Audio bytes: {len(st.session_state['audio'].getvalue())} bytes")
+
         except Exception as e:
             st.error(str(e))
             st.error("Invalid URL entered.")
