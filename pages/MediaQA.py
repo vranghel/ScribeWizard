@@ -104,8 +104,27 @@ if audio_source == "Upload media file":
     print(f"Audio uploaded: {audio_file}")
     if audio_file:
         st.session_state['result'] = None
-        st.session_state['audio'] = BytesIO(audio_file.getvalue())
-        st.session_state['mimetype'] = audio_file.type
+        original_file_size = audio_file.size / (1024 * 1024)  # Convert to MB
+        original_mimetype = audio_file.type  # Store the original mimetype
+        audio_file_contents = audio_file.getvalue()
+        # Preprocess the uploaded audio
+        result = subprocess.run([
+            'ffmpeg',
+            '-i', 'pipe:0',
+            '-ar', '16000',
+            '-ac', '1',
+            '-map', '0:a',
+            '-f', 'mp3',
+            '-'
+        ], input=audio_file_contents, capture_output=True, check=True)
+        processed_audio = BytesIO(result.stdout)
+        processed_audio.name = "processed_audio.mp3"  # Set a new file name
+        processed_file_size = processed_audio.getbuffer().nbytes / (1024 * 1024)  # Convert to MB
+        duration = get_audio_duration(processed_audio)
+        st.write(f"File: {processed_audio.name} ({original_file_size:.2f} MB --> {processed_file_size:.2f} MB, Duration: {duration})")
+
+        st.session_state['audio'] = processed_audio
+        st.session_state['mimetype'] = "audio/mp3"  # Set mimetype to mp3 since we converted it
         st.audio(st.session_state['audio'])  # Show audio player for uploaded file
     else:
         st.session_state['audio'] = None
